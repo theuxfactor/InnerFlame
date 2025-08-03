@@ -23,7 +23,7 @@ A web-based Tummo breathing meditation timer that guides users through structure
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/inner-flame.git
+git clone https://github.com/theuxfactor/inner-flame.git
 cd inner-flame
 ```
 
