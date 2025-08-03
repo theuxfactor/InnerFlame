@@ -17,25 +17,6 @@ export const TummoTimer = () => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
-  const [windowDimensions, setWindowDimensions] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 800,
-    height: typeof window !== 'undefined' ? window.innerHeight : 600
-  });
-  
-  // Update window dimensions when window resizes
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const handleResize = () => {
-        setWindowDimensions({
-          width: window.innerWidth,
-          height: window.innerHeight
-        });
-      };
-      
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }
-  }, []);
 
   // Reset function
   const resetMeditation = () => {
@@ -107,7 +88,7 @@ export const TummoTimer = () => {
         setPhase("breathing");
         setBreathingPhase("inhale");
         setTimeRemaining(3000); // 3 seconds to breathe in
-        setNotificationMessage("Take a deep breath in");
+        setNotificationMessage("Take a deep breath in and prepare for hold phase");
         
         // Set up a timeout to move to hold-in phase after the breath
         setTimeout(() => {
@@ -182,20 +163,26 @@ export const TummoTimer = () => {
               <p className="text-muted-foreground">{getPhaseDescription()}</p>
             </div>
             
-            {/* Confetti Explosion for completion */}
+            {/* Confetti Explosion for completion - restricted to widget area */}
             {phase === "completed" && (
-              <div className="fixed inset-0 z-50 pointer-events-none">
+              <div className="absolute inset-0 z-50 pointer-events-none overflow-hidden">
                 <ReactConfetti
-                  width={windowDimensions.width}
-                  height={windowDimensions.height}
-                  recycle={true}
+                  width={400} // Fixed width to match the widget width
+                  height={500} // Fixed height to match the widget height
+                  recycle={false} // Don't recycle confetti for a one-time effect
                   run={true}
-                  numberOfPieces={500}
-                  gravity={0.2}
-                  initialVelocityX={10}
-                  initialVelocityY={10}
-                  tweenDuration={5000}
+                  numberOfPieces={150} // Further reduced number of pieces
+                  gravity={0.3} // Increased gravity for faster falling
+                  initialVelocityX={3} // Reduced horizontal velocity
+                  initialVelocityY={3} // Reduced vertical velocity
+                  tweenDuration={3000} // Shorter animation duration
                   colors={["#FF5252", "#FFD740", "#40C4FF", "#69F0AE", "#FF4081", "#7C4DFF"]}
+                  confettiSource={{
+                    x: 200, // Center of widget
+                    y: 100, // Top area of widget
+                    w: 200, // Width of source
+                    h: 0
+                  }} // Confetti originates from within the widget
                 />
               </div>
             )}
