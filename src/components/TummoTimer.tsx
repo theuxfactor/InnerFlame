@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BreathingCircle } from "./BreathingCircle";
 import { Play, Square, RotateCcw } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type MeditationPhase = "ready" | "breathing" | "hold-out" | "hold-in" | "completed";
 type BreathingPhase = "inhale" | "exhale" | "hold-out" | "hold-in" | "completed";
@@ -11,6 +12,7 @@ export const TummoTimer = () => {
   const [phase, setPhase] = useState<MeditationPhase>("ready");
   const [breathingPhase, setBreathingPhase] = useState<BreathingPhase>("inhale");
   const [cycleCount, setCycleCount] = useState(0);
+  const [selectedCycles, setSelectedCycles] = useState(15); // Default to 15 cycles
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
@@ -32,7 +34,12 @@ export const TummoTimer = () => {
     setBreathingPhase("inhale");
     setCycleCount(1);
     setTimeRemaining(2000); // 2 seconds for inhale
-    setNotificationMessage("Begin your Tummo practice - breathe deeply and mindfully");
+    setNotificationMessage(`Begin your Tummo practice - ${selectedCycles} cycles with ${selectedCycles}-second holds`);
+  };
+  
+  // Calculate hold time based on selected cycles
+  const getHoldTime = () => {
+    return selectedCycles * 1000; // Convert to milliseconds
   };
 
   // Stop meditation
@@ -56,25 +63,42 @@ export const TummoTimer = () => {
           setBreathingPhase("exhale");
           setTimeRemaining(2000); // 2 seconds for exhale
         } else if (breathingPhase === "exhale") {
-          if (cycleCount < 10) {
+          if (cycleCount < selectedCycles) {
             // Continue to next cycle
             setCycleCount(prev => prev + 1);
             setBreathingPhase("inhale");
             setTimeRemaining(2000); // 2 seconds for inhale
+            
+            // Special notification for the last cycle
+            if (cycleCount === selectedCycles - 1) {
+              setNotificationMessage("Final breathing cycle - prepare for hold phase");
+            }
           } else {
-            // After 10th exhale, start hold-out phase
+            // After final exhale, start hold-out phase
             setPhase("hold-out");
             setBreathingPhase("hold-out");
-            setTimeRemaining(30000); // 30 seconds hold-out
-            setNotificationMessage("Now hold your breath out (empty lungs) for 30 seconds");
+            const holdTime = getHoldTime();
+            setTimeRemaining(holdTime);
+            setNotificationMessage(`Now hold your breath out (empty lungs) for ${holdTime/1000} seconds`);
           }
         }
       } else if (phase === "hold-out") {
-        // Move to hold-in phase - take a breath first
-        setPhase("hold-in");
-        setBreathingPhase("hold-in");
-        setTimeRemaining(30000); // 30 seconds hold-in
-        setNotificationMessage("Take a deep breath in and hold (full lungs) for 30 seconds");
+        // Add a brief transition for breathing in
+        setPhase("breathing");
+        setBreathingPhase("inhale");
+        setTimeRemaining(3000); // 3 seconds to breathe in
+        setNotificationMessage("Take a deep breath in");
+        
+        // Set up a timeout to move to hold-in phase after the breath
+        setTimeout(() => {
+          if (isActive) { // Only proceed if still active
+            setPhase("hold-in");
+            setBreathingPhase("hold-in");
+            const holdTime = getHoldTime();
+            setTimeRemaining(holdTime);
+            setNotificationMessage(`Hold your breath (full lungs) for ${holdTime/1000} seconds`);
+          }
+        }, 3000);
       } else if (phase === "hold-in") {
         // Complete the meditation
         setPhase("completed");
@@ -93,15 +117,17 @@ export const TummoTimer = () => {
   };
 
   const getPhaseDescription = () => {
+    const holdSeconds = selectedCycles;
+    
     switch (phase) {
       case "ready":
-        return "Prepare yourself for the Tummo breathing practice. Find a comfortable seated position.";
+        return "Prepare yourself for the Tummo breathing practice. Select your cycle count below.";
       case "breathing":
-        return "Follow the breathing pattern: 2 seconds in, 2 seconds out, for 10 cycles.";
+        return `Follow the breathing pattern: 2 seconds in, 2 seconds out, for ${selectedCycles} cycles.`;
       case "hold-out":
-        return "Hold your breath out (empty lungs) for 30 seconds.";
+        return `Hold your breath out (empty lungs) for ${holdSeconds} seconds.`;
       case "hold-in":
-        return "Take a deep breath and hold it in (full lungs) for 30 seconds.";
+        return `Take a deep breath and hold it in (full lungs) for ${holdSeconds} seconds.`;
       case "completed":
         return "Well done! Your inner flame has been kindled. Take a moment to feel the warmth within.";
       default:
@@ -120,22 +146,80 @@ export const TummoTimer = () => {
             Tummo Breathing Meditation
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-8">
-          <div className="text-center">
-            <p className="text-muted-foreground mb-4">{getPhaseDescription()}</p>
+        <CardContent className="space-y-8 card-content-fixed">
+          {/* Fixed height container for all UI elements */}
+          <div className="flex flex-col min-h-[180px]">
+            {/* Phase description with fixed height */}
+            <div className="text-center h-16 flex items-center justify-center">
+              <p className="text-muted-foreground">{getPhaseDescription()}</p>
+            </div>
             
-            {notificationMessage && (
-              <p className="text-primary font-medium mb-4">{notificationMessage}</p>
-            )}
-            
-            {(phase === "hold-out" || phase === "hold-in") && timeRemaining > 0 && (
-              <div className="text-2xl font-bold text-primary">
-                {formatTime(timeRemaining)}
+            {/* Configuration UI container with absolute positioning */}
+            <div className="relative h-[120px]">
+              {/* Cycle Selection UI - Absolute positioned to prevent layout shifts */}
+              <div 
+                className={`absolute inset-0 flex flex-col items-center justify-start pt-2
+                  transition-all duration-300 ${phase === "ready" ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+              >
+                <div className="flex justify-center space-x-4 mb-4">
+                  {[5, 10, 15].map((cycles) => (
+                    <Button 
+                      key={cycles}
+                      onClick={() => setSelectedCycles(cycles)}
+                      className={cn(
+                        "px-6 py-2 min-w-[80px]",
+                        selectedCycles === cycles 
+                          ? "bg-primary text-primary-foreground" 
+                          : "bg-secondary text-secondary-foreground hover:bg-primary/80 hover:text-primary-foreground"
+                      )}
+                      disabled={phase !== "ready"}
+                    >
+                      {cycles} Cycles
+                    </Button>
+                  ))}
+                </div>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>
+                    <span className="font-medium">{selectedCycles === 5 ? "Beginner" : selectedCycles === 10 ? "Intermediate" : "Advanced"}</span> - 
+                    {selectedCycles}-second hold phases
+                  </p>
+                  <p className="text-xs">
+                    {selectedCycles === 5 
+                      ? "Shorter practice for beginners" 
+                      : selectedCycles === 10 
+                        ? "Balanced practice for regular meditators" 
+                        : "Full practice for experienced practitioners"}
+                  </p>
+                </div>
               </div>
-            )}
+              
+              {/* Practice information - Absolute positioned to overlay in the same space */}
+              <div 
+                className={`absolute inset-0 flex flex-col items-center justify-center
+                  transition-all duration-300 ${phase !== "ready" ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+              >
+                {notificationMessage && phase !== "ready" && (
+                  <p className="text-primary font-medium mb-4 fade-in-up">{notificationMessage}</p>
+                )}
+                
+                {/* Timer display */}
+                {(phase === "hold-out" || phase === "hold-in") && timeRemaining > 0 && (
+                  <div className="text-2xl font-bold text-primary fade-in-up">
+                    {formatTime(timeRemaining)}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          <BreathingCircle phase={breathingPhase} cycleCount={cycleCount} />
+          {/* Breathing Circle - Fixed size container */}
+          <div className="flex justify-center items-center h-[320px]">
+            <BreathingCircle 
+              phase={breathingPhase} 
+              cycleCount={cycleCount} 
+              totalCycles={selectedCycles} 
+            />
+          </div>
 
           <div className="flex justify-center space-x-4">
             {!isActive && phase !== "completed" && (

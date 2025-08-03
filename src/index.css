@@ -2,6 +2,93 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Smooth UI transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Breathing animations with precise 2s timing */
+@keyframes breatheIn {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.9;
+    box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 1;
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.4);
+  }
+}
+
+@keyframes breatheOut {
+  0% {
+    transform: scale(1.15);
+    opacity: 1;
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.4);
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.15);
+  }
+}
+
+@keyframes holdFull {
+  0%, 100% {
+    transform: scale(1.05);
+    opacity: 0.95;
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+  }
+  50% {
+    transform: scale(1.07);
+    opacity: 0.97;
+    box-shadow: 0 0 22px rgba(249, 115, 22, 0.35);
+  }
+}
+
+@keyframes holdEmpty {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.85;
+    box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
+  }
+  50% {
+    transform: scale(0.94);
+    opacity: 0.87;
+    box-shadow: 0 0 17px rgba(249, 115, 22, 0.25);
+  }
+}
+
+@keyframes completed {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.95;
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.35);
+  }
+}
+
 @layer base {
   :root {
     --background: 20 20% 8%;
@@ -36,5 +123,70 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Smooth animations */
+  .fade-in-up {
+    animation: fadeInUp 0.3s ease-out forwards;
+  }
+  
+  .fade-out {
+    animation: fadeOut 0.15s ease-in forwards;
+  }
+  
+  /* Breathing circle animations with precise timing */
+  .animate-breathe-in {
+    animation: breatheIn 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  .animate-breathe-out {
+    animation: breatheOut 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  .animate-hold-full {
+    animation: holdFull 2s ease-in-out infinite;
+  }
+  
+  .animate-hold-empty {
+    animation: holdEmpty 2s ease-in-out infinite;
+  }
+  
+  .animate-completed {
+    animation: completed 3s ease-in-out infinite;
+  }
+  
+  /* Enhanced transitions */
+  .transition-smooth {
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .transition-fast {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Fixed heights for consistent layout */
+  .card-content-fixed {
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .phase-description-fixed {
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .notification-fixed {
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  /* Smooth transitions for all elements */
+  * {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
