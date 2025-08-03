@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BreathingCircle } from "./BreathingCircle";
 import { Play, Square, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ReactConfetti from "react-confetti";
 
-type MeditationPhase = "ready" | "breathing" | "hold-out" | "hold-in" | "completed";
-type BreathingPhase = "inhale" | "exhale" | "hold-out" | "hold-in" | "completed";
+type MeditationPhase = "ready" | "breathing" | "hold-out" | "hold-in" | "final-exhale" | "completed";
+type BreathingPhase = "inhale" | "exhale" | "hold-out" | "hold-in" | "final-exhale" | "completed";
 
 export const TummoTimer = () => {
   const [phase, setPhase] = useState<MeditationPhase>("ready");
@@ -16,6 +17,25 @@ export const TummoTimer = () => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [windowDimensions, setWindowDimensions] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 800,
+    height: typeof window !== 'undefined' ? window.innerHeight : 600
+  });
+  
+  // Update window dimensions when window resizes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handleResize = () => {
+        setWindowDimensions({
+          width: window.innerWidth,
+          height: window.innerHeight
+        });
+      };
+      
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
 
   // Reset function
   const resetMeditation = () => {
@@ -100,6 +120,12 @@ export const TummoTimer = () => {
           }
         }, 3000);
       } else if (phase === "hold-in") {
+        // Move to final exhale phase
+        setPhase("final-exhale");
+        setBreathingPhase("final-exhale");
+        setTimeRemaining(3000); // 3 seconds for final exhale
+        setNotificationMessage("Now release your breath completely and relax.");
+      } else if (phase === "final-exhale") {
         // Complete the meditation
         setPhase("completed");
         setBreathingPhase("completed");
@@ -128,8 +154,10 @@ export const TummoTimer = () => {
         return `Hold your breath out (empty lungs) for ${holdSeconds} seconds.`;
       case "hold-in":
         return `Take a deep breath and hold it in (full lungs) for ${holdSeconds} seconds.`;
+      case "final-exhale":
+        return "Now release your breath completely and relax.";
       case "completed":
-        return "Well done! Your inner flame has been kindled. Take a moment to feel the warmth within.";
+        return "Well done! Your inner flame has been completed. Take a moment to feel the warmth within.";
       default:
         return "";
     }
@@ -148,11 +176,29 @@ export const TummoTimer = () => {
         </CardHeader>
         <CardContent className="space-y-8 card-content-fixed">
           {/* Fixed height container for all UI elements */}
-          <div className="flex flex-col min-h-[180px]">
+          <div className="flex flex-col min-h-[180px] relative">
             {/* Phase description with fixed height */}
             <div className="text-center h-16 flex items-center justify-center">
               <p className="text-muted-foreground">{getPhaseDescription()}</p>
             </div>
+            
+            {/* Confetti Explosion for completion */}
+            {phase === "completed" && (
+              <div className="fixed inset-0 z-50 pointer-events-none">
+                <ReactConfetti
+                  width={windowDimensions.width}
+                  height={windowDimensions.height}
+                  recycle={true}
+                  run={true}
+                  numberOfPieces={500}
+                  gravity={0.2}
+                  initialVelocityX={10}
+                  initialVelocityY={10}
+                  tweenDuration={5000}
+                  colors={["#FF5252", "#FFD740", "#40C4FF", "#69F0AE", "#FF4081", "#7C4DFF"]}
+                />
+              </div>
+            )}
             
             {/* Configuration UI container with absolute positioning */}
             <div className="relative h-[120px]">

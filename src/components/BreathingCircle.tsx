@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 interface BreathingCircleProps {
-  phase: "inhale" | "exhale" | "hold-out" | "hold-in" | "completed";
+  phase: "inhale" | "exhale" | "hold-out" | "hold-in" | "final-exhale" | "completed";
   cycleCount: number;
   totalCycles: number;
 }
@@ -22,6 +22,8 @@ export const BreathingCircle = ({ phase, cycleCount, totalCycles }: BreathingCir
         return "Hold Empty";
       case "hold-in":
         return "Hold Full";
+      case "final-exhale":
+        return "Final Release";
       case "completed":
         return "Complete";
       default:
@@ -60,6 +62,8 @@ export const BreathingCircle = ({ phase, cycleCount, totalCycles }: BreathingCir
       case "inhale":
         return "animate-breathe-in";
       case "exhale":
+        return "animate-breathe-out";
+      case "final-exhale":
         return "animate-breathe-out";
       case "hold-in":
         return "animate-hold-full";
