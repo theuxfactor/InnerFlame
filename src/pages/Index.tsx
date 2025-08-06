@@ -11,15 +11,7 @@ const Index = () => {
       
       <footer className="w-full text-center py-4 text-sm text-muted-foreground mt-auto">
         <p>
-          Created by ArunG, 2025. Version 1.0 | {" "}
-          <a 
-            href="https://github.com/theuxfactor/InnerFlame/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            GitHub
-          </a>
+          Created by ArunG, 2025. Version 1.0.
         </p>
       </footer>
     </div>
